@@ -1,0 +1,193 @@
+openapi: 3.0.1
+info:
+  title: S.M.G
+  description: The Student management game is awesome
+  version: 0.1.0
+  contact:
+    name: GIS Team
+    url: https://gis.adorsys.com
+    email: gis-udm@adorsys.com
+  license:
+    name: MIT
+tags:
+  - name: student
+    description: All about student
+  - name: mean
+    description: All about means
+servers:
+  - url: 'http://localhost:{port}'
+    description: Simple dev server
+    variables:
+      port:
+        default: '8080'
+  - url: 'http://host.docker.internal:{port}'
+    description: Keycloak dev server
+    variables:
+      port:
+        default: '8080'
+  - url: 'https://{env}.student.adorsys.com'
+    description: Live Server
+    variables:
+      env:
+        default: dev
+        enum:
+          - prod
+          - staging
+          - dev
+components:
+  schemas:
+    Mean:
+      properties:
+        value:
+          type: number
+      required:
+        - value
+    StudentMean:
+      properties:
+        student_id:
+          type: string
+          format: cuid
+        value:
+          type: number
+      required:
+        - student_id
+        - value
+    CreateStudent:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        age:
+          type: number
+          default: -1
+    Student:
+      allOf:
+        - $ref: '#/components/schemas/CreateStudent'
+        - properties:
+            id:
+              type: string
+              format: cuid
+          required:
+            - id
+paths:
+  '/api/students':
+    post:
+      tags: [student]
+      summary: Create a student
+      operationId: createStudent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudent'
+      responses:
+        201:
+          description: A student was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        409:
+          description: A student already exist
+  '/api/students/{student_id}':
+    get:
+      tags: [student]
+      summary: Get a student
+      operationId: getStudent
+      parameters:
+        - name: student_id
+          required: true
+          in: path
+          schema:
+            type: string
+            format: cuid
+      responses:
+        200:
+          description: A student was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        404:
+          description: The student doesn't exist
+    delete:
+      tags:
+        - student
+      summary: Delete a student
+      operationId: deleteStudent
+      parameters:
+        - name: student_id
+          required: true
+          in: path
+          schema:
+            type: string
+            format: cuid
+      responses:
+        200:
+          description: A student was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        404:
+          description: The student doesn't exist
+  '/api/students/{student_id}/mean':
+    get:
+      tags: [mean]
+      summary: Get a student's mean
+      operationId: getStudentMean
+      parameters:
+        - name: student_id
+          required: true
+          in: path
+          schema:
+            type: string
+            format: cuid
+      responses:
+        200:
+          description: Got a student's mean
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentMean'
+        404:
+          description: The student doesn't exist
+    post:
+      tags: [mean]
+      summary: Get a student's mean
+      operationId: addStudentMean
+      parameters:
+        - name: student_id
+          required: true
+          in: path
+          schema:
+            type: string
+            format: cuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentMean'
+      responses:
+        200:
+          description: A student's mean was created
+        404:
+          description: The student doesn't exist
+
+  '/api/students/__/mean':
+    get:
+      tags: [mean]
+      summary: Get a student's mean
+      operationId: getAllStudentMean
+      parameters: []
+      responses:
+        200:
+          description: Get all student's mean
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mean'
+        404:
+          description: The student doesn't exist
+
