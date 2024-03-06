@@ -55,12 +55,15 @@ components:
     CreateStudent:
       required:
         - name
+        - password
       properties:
         name:
           type: string
         age:
           type: number
           default: -1
+        password:
+          type: string
     Student:
       allOf:
         - $ref: '#/components/schemas/CreateStudent'
